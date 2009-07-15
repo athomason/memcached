@@ -234,7 +234,8 @@ static enum test_return test_issue_44(void) {
     char pidfile[80];
     char buffer[256];
     snprintf(pidfile, sizeof(pidfile), "/tmp/memcached.%d", getpid());
-    snprintf(buffer, sizeof(buffer), "./memcached-debug -p 0 -P %s -d", pidfile);
+    snprintf(buffer, sizeof(buffer), "./memcached-debug -p 0 -U 0 -P %s -d",
+             pidfile);
     assert(system(buffer) == 0);
     sleep(1);
     FILE *fp = fopen(pidfile, "r");
