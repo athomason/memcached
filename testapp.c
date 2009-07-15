@@ -233,8 +233,8 @@ static enum test_return test_safe_strtol(void) {
 static enum test_return test_issue_44(void) {
     char pidfile[80];
     char buffer[256];
-    sprintf(pidfile, "/tmp/memcached.%d", getpid());
-    sprintf(buffer, "./memcached-debug -p 0 -P %s -d", pidfile);
+    snprintf(pidfile, sizeof(pidfile), "/tmp/memcached.%d", getpid());
+    snprintf(buffer, sizeof(buffer), "./memcached-debug -p 0 -P %s -d", pidfile);
     assert(system(buffer) == 0);
     sleep(1);
     FILE *fp = fopen(pidfile, "r");
