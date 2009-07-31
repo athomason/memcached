@@ -99,9 +99,9 @@
 
 /** Append an indexed stat with a stat name (with format), value format
     and value */
-#define APPEND_NUM_FMT_STAT(name_fmt, num, name, fmt, val)   \
-    klen = sprintf(key_str, name_fmt, num, name);            \
-    vlen = sprintf(val_str, fmt, val);                       \
+#define APPEND_NUM_FMT_STAT(name_fmt, num, name, fmt, val)          \
+    klen = snprintf(key_str, sizeof(key_str), name_fmt, num, name); \
+    vlen = snprintf(val_str, sizeof(val_str), fmt, val);            \
     add_stats(key_str, klen, val_str, vlen, c);
 
 /** Common APPEND_NUM_FMT_STAT format. */

@@ -379,7 +379,7 @@ char *do_item_cachedump(const unsigned int slabs_clsid, const unsigned int limit
                        (unsigned long)it->exptime + process_started);
         if (bufcurr + len + 6 > memlimit)  /* 6 is END\r\n\0 */
             break;
-        strcpy(buffer + bufcurr, temp);
+        strncpy(buffer + bufcurr, temp, memlimit - bufcurr);
         bufcurr += len;
         shown++;
         it = it->next;
@@ -446,7 +446,7 @@ void do_item_stats_sizes(ADD_STAT add_stats, void *c) {
             if (histogram[i] != 0) {
                 char key[8];
                 int klen = 0;
-                klen = sprintf(key, "%d", i * 32);
+                klen = snprintf(key, sizeof(key), "%d", i * 32);
                 assert(klen < sizeof(key));
                 APPEND_STAT(key, "%u", histogram[i]);
             }

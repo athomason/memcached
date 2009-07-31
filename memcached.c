@@ -1279,11 +1279,11 @@ static void append_ascii_stats(const char *key, const uint16_t klen,
     uint32_t nbytes;
 
     if (klen == 0 && vlen == 0) {
-        nbytes = sprintf(pos, "END\r\n");
+        nbytes = snprintf(pos, vlen + klen + 10, "END\r\n");
     } else if (vlen == 0) {
-        nbytes = sprintf(pos, "STAT %s\r\n", key);
+        nbytes = snprintf(pos, vlen + klen + 10, "STAT %s\r\n", key);
     } else {
-        nbytes = sprintf(pos, "STAT %s %s\r\n", key, val);
+        nbytes = snprintf(pos, vlen + klen + 10, "STAT %s %s\r\n", key, val);
     }
 
     c->stats.offset += nbytes;
@@ -2326,7 +2326,7 @@ static inline void process_get_command(conn *c, token_t *tokens, size_t ntokens,
                     return;
                   }
                   *(c->suffixlist + i) = suffix;
-                  sprintf(suffix, " %llu\r\n", (unsigned long long)ITEM_get_cas(it));
+                  snprintf(suffix, SUFFIX_SIZE, " %llu\r\n", (unsigned long long)ITEM_get_cas(it));
                   if (add_iov(c, "VALUE ", 6) != 0 ||
                       add_iov(c, ITEM_key(it), it->nkey) != 0 ||
                       add_iov(c, ITEM_suffix(it), it->nsuffix - 2) != 0 ||
@@ -2491,8 +2491,10 @@ static void process_update_command(conn *c, token_t *tokens, const size_t ntoken
     conn_set_state(c, conn_nread);
 }
 
+#define MAX_UINT64_STRLEN sizeof("18446744073709551615")
+
 static void process_arithmetic_command(conn *c, token_t *tokens, const size_t ntokens, const bool incr) {
-    char temp[sizeof("18446744073709551615")];
+    char temp[MAX_UINT64_STRLEN];
     item *it;
     uint64_t delta;
     char *key;
@@ -2586,7 +2588,7 @@ enum delta_result_type do_add_delta(conn *c, item *it, const bool incr,
     }
     pthread_mutex_unlock(&c->thread->stats.mutex);
 
-    sprintf(buf, "%llu", (unsigned long long)value);
+    snprintf(buf, MAX_UINT64_STRLEN, "%llu", (unsigned long long)value);
     res = strlen(buf);
     if (res + 2 > it->nbytes) { /* need to realloc */
         item *new_it;
@@ -3672,7 +3674,7 @@ static int server_socket_unix(const char *path, int access_mask) {
     memset(&addr, 0, sizeof(addr));
 
     addr.sun_family = AF_UNIX;
-    strcpy(addr.sun_path, path);
+    strncpy(addr.sun_path, path, sizeof(addr.sun_path)-1);
     old_umask = umask( ~(access_mask&0777));
     if (bind(sfd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
         perror("bind()");
